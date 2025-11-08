@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChessBoard } from "../components/ChessBoard";
 import { useSocket } from "../hooks/useSocket";
 import { Chess } from "chess.js";
@@ -19,10 +19,22 @@ export const Game = () => {
   const [winner, setWinner] = useState<string | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
 
+  // ✅ Ref to auto-scroll move history
+  const moveListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (moveListRef.current) {
+      moveListRef.current.scrollTo({
+        top: moveListRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [moves]);
+
   useEffect(() => {
     if (!socket) return;
 
-    socket.onmessage = (event) => {
+    const handleMessage = (event: MessageEvent) => {
       const message = JSON.parse(event.data);
       console.log("WS message:", message);
 
@@ -69,12 +81,20 @@ export const Game = () => {
           console.log("Unknown message type:", message.type);
       }
     };
+
+    socket.onmessage = handleMessage;
+
+    return () => {
+      socket.onmessage = null; // cleanup
+    };
   }, [socket, chess]);
 
   if (!socket)
     return (
       <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-white text-xl font-semibold">Connecting to server...</div>
+        <div className="text-white text-xl font-semibold">
+          Connecting to server...
+        </div>
       </div>
     );
 
@@ -102,9 +122,13 @@ export const Game = () => {
                       Playing as: {playerColor === "w" ? "White ⚪" : "Black ⚫"}
                     </span>
                   </div>
-                  
+
                   <div className="bg-slate-700 px-4 py-2 rounded-full">
-                    <span className={`font-bold text-sm ${turn === playerColor ? 'text-green-400' : 'text-gray-400'}`}>
+                    <span
+                      className={`font-bold text-sm ${
+                        turn === playerColor ? "text-green-400" : "text-gray-400"
+                      }`}
+                    >
                       {turn === "w" ? "White's Turn" : "Black's Turn"}
                       {turn === playerColor && " 🎯"}
                     </span>
@@ -172,13 +196,23 @@ export const Game = () => {
               <div className="p-4 border-b border-slate-700 shrink-0">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-900 rounded-lg p-3 text-center">
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Moves</p>
-                    <p className="text-white font-bold text-xl">{moves.length}</p>
+                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+                      Moves
+                    </p>
+                    <p className="text-white font-bold text-xl">
+                      {moves.length}
+                    </p>
                   </div>
                   <div className="bg-slate-900 rounded-lg p-3 text-center">
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Status</p>
-                    <p className={`font-bold text-xl ${gameStarted ? 'text-green-400' : 'text-gray-400'}`}>
-                      {gameStarted ? 'Live' : 'Idle'}
+                    <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">
+                      Status
+                    </p>
+                    <p
+                      className={`font-bold text-xl ${
+                        gameStarted ? "text-green-400" : "text-gray-400"
+                      }`}
+                    >
+                      {gameStarted ? "Live" : "Idle"}
                     </p>
                   </div>
                 </div>
@@ -190,7 +224,10 @@ export const Game = () => {
                   <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
                   Move History
                 </h2>
-                <div className="bg-slate-900 rounded-xl p-3 flex-1 overflow-y-auto custom-scrollbar">
+                <div
+                  ref={moveListRef}
+                  className="bg-slate-900 rounded-xl p-3 flex-1 overflow-y-auto max-h-[300px] custom-scrollbar"
+                >
                   {moves.length === 0 ? (
                     <p className="text-gray-500 text-sm text-center py-6">
                       No moves yet. Start playing!
@@ -209,7 +246,9 @@ export const Game = () => {
                           <span className="text-gray-400 font-mono text-xs font-bold min-w-8">
                             {Math.floor(i / 2) + 1}.
                           </span>
-                          <span className="text-white text-sm font-medium flex-1">{m}</span>
+                          <span className="text-white text-sm font-medium flex-1">
+                            {m}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -223,7 +262,7 @@ export const Game = () => {
 
       {/* Winner Modal */}
       {winner && (
-        <div className="fixed bg-opacity-70 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 relative border-2 border-yellow-400">
             <button
               onClick={() => setWinner(null)}
@@ -235,13 +274,15 @@ export const Game = () => {
               <FaCrown className="inline-block text-6xl text-yellow-400 mb-4 animate-bounce" />
               <h2 className="text-3xl font-bold mb-3 text-white">Game Over!</h2>
               <p className="text-xl text-gray-300">
-                Winner: <span className="uppercase font-black text-yellow-400 text-2xl">{winner}</span>
+                Winner:{" "}
+                <span className="uppercase font-black text-yellow-400 text-2xl">
+                  {winner}
+                </span>
               </p>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };
