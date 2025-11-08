@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaCrown, FaChess, FaTrophy } from "react-icons/fa";
+import { FaChess, FaTrophy } from "react-icons/fa";
 
 export const Landing = () => {
   const navigate = useNavigate();

@@ -1,13 +1,24 @@
 // websocket in nodejs
 import { WebSocketServer } from 'ws';
 import { GameManager } from './GameManager.js';
+import http from 'http';
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = process.env.PORT || 8080;
+
+// Create an HTTP server just to attach WebSocket to it
+const server = http.createServer();
+
+// Attach WebSocket server to same HTTP server
+const wss = new WebSocketServer({ server });
 
 const gameManager = new GameManager();
 
-wss.on('connection', function connection(ws) {
-  gameManager.addUser(ws)
+wss.on('connection', (ws) => {
+  gameManager.addUser(ws);
 
-  ws.on("disconnect", () => gameManager.removeUser(ws));
+  ws.on('close', () => gameManager.removeUser(ws));
+});
+
+server.listen(PORT, () => {
+  console.log(`WebSocket server running on port ${PORT}`);
 });

@@ -6,7 +6,7 @@
 
     /* ===== Environment ===== */
     "target": "ES2020",
-    "module": "CommonJS",
+    "module": "ESNext",
     "lib": ["ES2020"],
     "types": ["node"],
 
@@ -20,7 +20,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": false,
 
     /* ===== Module Resolution ===== */
     "moduleResolution": "node"
