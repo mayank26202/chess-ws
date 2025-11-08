@@ -1,11 +1,38 @@
 import type { Color, PieceSymbol, Square } from "chess.js";
 import { useState, useMemo } from "react";
 import { Chess } from "chess.js";
+import { 
+  GiChessKing, 
+  GiChessQueen, 
+  GiChessRook, 
+  GiChessBishop, 
+  GiChessKnight, 
+  GiChessPawn 
+} from "react-icons/gi";
+
+// Chess piece component with icons
+const ChessPiece = ({ type, color }: { type: PieceSymbol; color: Color }) => {
+  const iconProps = {
+    size: 40,
+    className: color === "w" 
+      ? "text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" 
+      : "text-gray-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.3)]"
+  };
+
+  switch (type) {
+    case "k": return <GiChessKing {...iconProps} />;
+    case "q": return <GiChessQueen {...iconProps} />;
+    case "r": return <GiChessRook {...iconProps} />;
+    case "b": return <GiChessBishop {...iconProps} />;
+    case "n": return <GiChessKnight {...iconProps} />;
+    case "p": return <GiChessPawn {...iconProps} />;
+    default: return null;
+  }
+};
 
 export const ChessBoard = ({
   board,
   fen,
-  socket,
   onMove,
   playerColor,
   turn,
@@ -25,6 +52,7 @@ export const ChessBoard = ({
   turn: "w" | "b";
 }) => {
   const [from, setFrom] = useState<null | Square>(null);
+  const [validMoves, setValidMoves] = useState<Square[]>([]);
 
   const chess = useMemo(() => new Chess(fen), [fen]);
 
@@ -47,12 +75,16 @@ export const ChessBoard = ({
     // deselect same square
     if (from === sq) {
       setFrom(null);
+      setValidMoves([]);
       return;
     }
 
     // reselect another of your own pieces
     if (!from && piece && piece.color === playerColor) {
       setFrom(sq);
+      // Get valid moves for this piece
+      const moves = chess.moves({ square: sq, verbose: true });
+      setValidMoves(moves.map(m => m.to as Square));
       return;
     }
 
@@ -60,6 +92,7 @@ export const ChessBoard = ({
     if (turn !== playerColor) {
       console.log("⏳ Not your turn");
       setFrom(null);
+      setValidMoves([]);
       return;
     }
 
@@ -74,43 +107,54 @@ export const ChessBoard = ({
         console.log("❌ Invalid move:", { from, to: sq });
       }
       setFrom(null);
+      setValidMoves([]);
       return;
     }
 
     // clicking empty square without selecting a piece does nothing
     setFrom(null);
+    setValidMoves([]);
   };
 
   return (
-    <div className="text-black border-4 border-gray-700 inline-block rounded-lg overflow-hidden">
+    <div className="inline-block border-8 border-gray-800 rounded-xl shadow-2xl overflow-hidden bg-gray-800">
       {renderBoard.map((row, i) => (
         <div key={i} className="flex">
           {row.map((cell, j) => {
             const sq = renderSquares[i][j];
             const dark = (i + j) % 2 === 1;
             const isSelected = from === sq;
+            const isValidMove = validMoves.includes(sq);
+            const lastRank = playerColor === "w" ? i === 7 : i === 0;
+            const firstFile = j === 0;
+
             return (
               <div
                 key={sq}
                 onClick={() => handleClick(sq, cell)}
-                className={`w-16 h-16 flex justify-center items-center cursor-pointer select-none transition-all
-                  ${dark ? "bg-green-700" : "bg-green-200"}
-                  ${isSelected ? "ring-4 ring-yellow-400" : ""}
+                className={`w-14 h-14 flex justify-center items-center cursor-pointer select-none transition-all relative
+                  ${dark ? "bg-teal-700" : "bg-teal-100"}
+                  ${isSelected ? "ring-4 ring-inset ring-yellow-400" : ""}
+                  ${isValidMove && !cell ? "after:content-[''] after:absolute after:w-4 after:h-4 after:bg-green-500 after:rounded-full after:opacity-70" : ""}
+                  ${isValidMove && cell ? "ring-4 ring-inset ring-red-400 ring-opacity-60" : ""}
+                  hover:brightness-110
                 `}
               >
-                {cell ? (
-                  <span
-                    className={`text-2xl font-bold ${
-                      cell.color === "w"
-                        ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-                        : "text-black"
-                    }`}
-                  >
-                    {cell.color === "w"
-                      ? cell.type.toUpperCase()
-                      : cell.type.toLowerCase()}
+                {cell && <ChessPiece type={cell.type} color={cell.color} />}
+                
+                {/* Rank labels (numbers on left side) */}
+                {firstFile && (
+                  <span className={`absolute left-1.5 top-1 text-xs font-bold ${dark ? "text-amber-100" : "text-amber-700"}`}>
+                    {playerColor === "w" ? 8 - i : i + 1}
                   </span>
-                ) : null}
+                )}
+                
+                {/* File labels (letters on bottom) */}
+                {lastRank && (
+                  <span className={`absolute right-1.5 bottom-1 text-xs font-bold ${dark ? "text-amber-100" : "text-amber-700"}`}>
+                    {files[playerColor === "w" ? j : 7 - j]}
+                  </span>
+                )}
               </div>
             );
           })}
