@@ -37,34 +37,36 @@ This project enables two players to connect, play live chess, and see synchroniz
 ```bash
 git clone https://github.com/yourusername/chess-ws.git
 cd chess-ws
-2️⃣ Install dependencies
+```
+
+## Install dependencies
+
 For backend:
-
-bash
-Copy code
-cd server
+```bash
+cd backend1
 npm install
+```
+
 For frontend:
-
-bash
-Copy code
-cd client
+```bash
+cd frontend
 npm install
-3️⃣ Start the backend server
-bash
-Copy code
-cd server
-npm start
-The WebSocket server will start on ws://localhost:8080
+```
 
-4️⃣ Run the frontend
-bash
+## Start the backend server
+```bash
+cd backend1
+npm run dev
+```
+
+##Run the frontend
+```bash
 Copy code
 cd client
 npm start
-Open your browser at http://localhost:3000
+```
 
-🔄 How It Works
+## How It Works
 Player A creates a new room (assigned by backend).
 
 Player B joins using the room ID.
@@ -75,9 +77,8 @@ The backend validates moves and broadcasts updates to both clients.
 
 Game ends when a checkmate or draw condition is detected.
 
-📁 Folder Structure
-pgsql
-Copy code
+## 📁 Folder Structure
+```
 chess-ws/
 │
 ├── client/              # React frontend
@@ -94,11 +95,13 @@ chess-ws/
 │   └── package.json
 │
 └── README.md
-🧪 Future Enhancements
+
+```
+## Future Enhancements
+
 Add player chat system
 
 Implement user authentication
 
 Add matchmaking and leaderboards
 
-Deploy using Render (backend) and Vercel (frontend)
