@@ -62,8 +62,8 @@ npm run dev
 ##Run the frontend
 ```bash
 Copy code
-cd client
-npm start
+cd frotend
+npm run dev
 ```
 
 ## How It Works
@@ -77,26 +77,7 @@ The backend validates moves and broadcasts updates to both clients.
 
 Game ends when a checkmate or draw condition is detected.
 
-## 📁 Folder Structure
-```
-chess-ws/
-│
-├── client/              # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChessBoard.jsx
-│   │   │   └── Tile.jsx
-│   │   ├── App.jsx
-│   │   └── index.js
-│   └── package.json
-│
-├── server/              # Node.js backend
-│   ├── index.js
-│   └── package.json
-│
-└── README.md
 
-```
 ## Future Enhancements
 
 Add player chat system
