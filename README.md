@@ -61,15 +61,14 @@ npm run dev
 
 ##Run the frontend
 ```bash
-Copy code
 cd frotend
 npm run dev
 ```
 
 ## How It Works
-Player A creates a new room (assigned by backend).
+Player A creates a new room by pressing start game.
 
-Player B joins using the room ID.
+Player B joins same way using start game.
 
 Both players’ boards stay in sync via WebSocket events.
 
